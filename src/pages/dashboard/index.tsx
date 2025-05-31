@@ -23,6 +23,8 @@ const DashboardPage: NextPageWithLayout = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [orderSheetOpen, setOrderSheetOpen] = useState(false);
 
+  const { data: categories } = api.category.getCategories.useQuery();
+
   const { data: products } = api.product.getProducts.useQuery();
 
   const handleCategoryClick = (categoryId: string) => {
@@ -94,11 +96,11 @@ const DashboardPage: NextPageWithLayout = () => {
         </div>
 
         <div className="flex space-x-4 overflow-x-auto pb-2">
-          {CATEGORIES.map((category) => (
+          {categories?.map((category) => (
             <CategoryFilterCard
               key={category.id}
               name={category.name}
-              productCount={category.count}
+              productCount={category.productCount}
               isSelected={selectedCategory === category.id}
               onClick={() => handleCategoryClick(category.id)}
             />

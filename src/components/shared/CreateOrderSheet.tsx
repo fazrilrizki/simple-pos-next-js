@@ -99,6 +99,12 @@ export const CreateOrderSheet = ({
     }
   })
 
+  const { mutate: simulatePayment } = api.order.simulatePayment.useMutation({
+    onSuccess: () => {
+      alert("simulated payment")
+    }
+  })
+
   const handleCreateOrder = () => {
     createOrderSheet({
       orderItems: cartStore.items.map(items => {
@@ -108,17 +114,19 @@ export const CreateOrderSheet = ({
         }
       })
     })
-    // setPaymentDialogOpen(true);
-    // setPaymentInfoLoading(true);
-
-    // setTimeout(() => {
-    //   setPaymentInfoLoading(false);
-    // }, 3000);
   };
 
   const handleRefresh = () => {
     setPaymentSuccess(true);
   };
+
+  const handleSimulatePayment = () => {
+    if (!createOrderResponse) return;
+
+    simulatePayment({
+      orderId: createOrderResponse?.order.id
+    })
+  }
 
   return (
     <>
@@ -204,6 +212,8 @@ export const CreateOrderSheet = ({
                 <p className="text-muted-foreground text-sm">
                   Transaction ID: {createOrderResponse?.order.id}
                 </p>
+
+                <Button onClick={handleSimulatePayment} variant="link">Simulate Payment</Button>
               </>
             )}
           </div>

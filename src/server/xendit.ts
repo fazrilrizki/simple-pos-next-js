@@ -1,9 +1,13 @@
-import { PaymentRequest } from 'xendit-node';
+import { PaymentMethod, PaymentRequest } from 'xendit-node';
 import { addMinutes } from 'date-fns';
 
 export const xenditPaymentRequestClient = new PaymentRequest({
     secretKey: process.env.XENDIT_SECRET_KEY!,
 });
+
+export const xenditPaymentMethodClient = new PaymentMethod({
+    secretKey: process.env.XENDIT_SECRET_KEY!
+})
 
 type CreateQRISParams = {
     amount: number;

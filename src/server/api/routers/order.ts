@@ -1,8 +1,9 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
-import { createQRIS } from "@/server/xendit";
+import { createQRIS, xenditPaymentMethodClient, xenditPaymentRequestClient } from "@/server/xendit";
 import { addMinutes } from "date-fns";
 import { db } from "@/server/db";
+import { TRPCError } from "@trpc/server";
 
 export const orderRouter = createTRPCRouter({
     createOrder: protectedProcedure.input(
@@ -81,4 +82,37 @@ export const orderRouter = createTRPCRouter({
             qrString: paymentRequest.paymentMethod.qrCode!.channelProperties!.qrString!,
         }
     }),
+
+    simulatePayment: protectedProcedure.input(
+        z.object({
+            orderId: z.string().uuid()
+        })
+    ).mutation(async ({ ctx, input }) => {
+        const { db } = ctx;
+
+        const order = await db.order.findUnique({
+            where: {
+                id: input.orderId
+            },
+            select: {
+                paymentMethodId: true,
+                grandtotal: true,
+                externalTransactionId: true
+            }
+        })
+
+        if (!order) {
+            throw new TRPCError({
+                code: "NOT_FOUND",
+                message: "Order not found"
+            })
+        }
+
+        await xenditPaymentMethodClient.simulatePayment({
+            paymentMethodId: order.paymentMethodId!,
+            data: {
+                amount: order.grandtotal
+            }
+        })
+    })
 })
